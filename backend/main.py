@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
+from passlib.context import CryptContext
 
 app = FastAPI()
 
@@ -19,9 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Models
+# --- Models ---
 class Alumnus(BaseModel):
-# ... existing code ...
     id: int
     name: str
     email: str
@@ -35,8 +35,14 @@ class Event(BaseModel):
     date: str
 
 class LoginData(BaseModel):
-    username: str
+    email: str
     password: str
+    role: str
+
+class UserInDB(BaseModel):
+    username: str
+    hashed_password: str
+    role: str # "student", "alumni", or "admin"
 
 # Dummy Data
 fake_alumni_db = [
@@ -48,17 +54,29 @@ fake_events_db = [
     {"id": 2, "title": "Tech Talk", "description": "A talk on recent advancements in AI.", "date": "2025-11-15"}
 ]
 
-# API Endpoints
+# --- Hardcoded User Data ---
+plain_users = {
+    "admin@example.com": {"password": "adminpassword", "role": "Admin"},
+    "student@example.com": {"password": "studentpassword", "role": "Student"},
+    "alumni@example.com": {"password": "alumnipassword", "role": "Alumni"},
+}
+
+fake_users_db = {}
+
+@app.on_event("startup")
+def startup_event():
+    """Hashes the plain text passwords on application startup."""
+    for email, user_data in plain_users.items():
+        fake_users_db[email] = {
+            "hashed_password": pwd_context.hash(user_data["password"]),
+            "role": user_data["role"]
+        }
+        
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Alumni Portal API"}
 
-# ... existing code ...
-from passlib.context import CryptContext
-
-# ... existing code ...
-app = FastAPI()
 
 # Password Hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -66,22 +84,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # CORS Middleware
 # ... existing code ...
 # ... existing code ...
-class LoginData(BaseModel):
-    username: str
-    password: str
-
-class UserInDB(BaseModel):
-    username: str
-    hashed_password: str
-    role: str # "student", "alumni", or "admin"
-
-# Dummy Data
-fake_users_db = {}
-# ... existing code ...
 # Analytics
 @app.get("/api/analytics")
 def analytics():
-# ... existing code ...
     return {"alumni_count": len(fake_alumni_db), "event_count": len(fake_events_db), "donations": 15000}
 
 # Signup
@@ -98,13 +103,21 @@ def signup(user_data: UserInDB):
 # Login
 @app.post("/api/login")
 def login(login_data: LoginData):
-    user_in_db = fake_users_db.get(login_data.username)
+    """
+    Authenticates a user based on email, password, and role.
+    """
+    user_in_db = fake_users_db.get(login_data.email)
+
     if not user_in_db:
-        return {"error": "Incorrect username or password"}
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+
+    if login_data.role.lower() != user_in_db["role"].lower():
+        raise HTTPException(status_code=401, detail="Incorrect role for this user")
+
     if not pwd_context.verify(login_data.password, user_in_db["hashed_password"]):
-        return {"error": "Incorrect username or password"}
-    
-    return {"message": f"Welcome {login_data.username}", "role": user_in_db["role"]}
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+
+    return {"message": f"Welcome {login_data.email}", "role": user_in_db["role"]}
 
 # Events
 @app.get("/api/events", response_model=List[Event])

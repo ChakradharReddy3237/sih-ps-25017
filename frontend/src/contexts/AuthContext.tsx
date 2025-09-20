@@ -12,6 +12,43 @@ interface AuthContextType {
   signup: (username: string, password: string, role: string) => Promise<any>;
   logout: () => void;
 }
+// ... existing code
+// ... existing code
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const login = async (email: string, password: string, role: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role }),
+      });
+      const data = await response.json();
+      if (data.role) {
+        setUser({ email, role: data.role });
+      }
+      return data;
+    } 
+    catch (error) {
+// ... existing code ...
+// ... existing code ...
+    }
+  };
+
+  const signup = async (email: string, password: string, role: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role }),
+      });
+      return await response.json();
+    } finally {
+// ... existing code ...
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
