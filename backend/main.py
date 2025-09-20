@@ -81,10 +81,6 @@ def read_root():
 # Password Hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# CORS Middleware
-# ... existing code ...
-# ... existing code ...
-# Analytics
 @app.get("/api/analytics")
 def analytics():
     return {"alumni_count": len(fake_alumni_db), "event_count": len(fake_events_db), "donations": 15000}
