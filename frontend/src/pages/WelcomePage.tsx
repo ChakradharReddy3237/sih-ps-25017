@@ -22,6 +22,20 @@ const WelcomePage: React.FC = () => {
               <p className="text-blue-200 text-sm">Punjab Engineering Institute</p>
               <p className="text-blue-100 text-xs">Excellence in Engineering Education</p>
             </div>
+            <div className="flex items-center space-x-4">
+                <button 
+                    onClick={() => navigate('/login')}
+                    className="bg-yellow-400 text-blue-900 font-semibold px-4 py-2 rounded-lg hover:bg-yellow-500 transition-colors"
+                >
+                    Login
+                </button>
+                <button 
+                    onClick={() => navigate('/signup')}
+                    className="bg-transparent border border-white text-white font-semibold px-4 py-2 rounded-lg hover:bg-white hover:text-blue-900 transition-colors"
+                >
+                    Signup
+                </button>
+            </div>
           </div>
         </div>
       </header>
@@ -38,74 +52,6 @@ const WelcomePage: React.FC = () => {
           </p>
         </div>
 
-        {/* Portal Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {/* Alumni Portal */}
-          <div className="group">
-            <div className="bg-white rounded-2xl shadow-xl p-8 transition-all duration-300 hover:shadow-2xl hover:scale-105 border border-gray-100">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-500 transition-colors duration-300">
-                  <GraduationCap className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 font-['Poppins']">Alumni Portal</h3>
-                <p className="text-gray-600 mb-8 font-['Inter']">
-                  Share your journey, mentor students, and give back to your alma mater. 
-                  Connect with fellow alumni and contribute to institutional growth.
-                </p>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-yellow-500 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-yellow-600 transition-colors duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Access Alumni Portal
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Student Portal */}
-          <div className="group">
-            <div className="bg-white rounded-2xl shadow-xl p-8 transition-all duration-300 hover:shadow-2xl hover:scale-105 border border-gray-100">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-500 transition-colors duration-300">
-                  <Users className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 font-['Poppins']">Student Portal</h3>
-                <p className="text-gray-600 mb-8 font-['Inter']">
-                  Connect with alumni mentors, explore career opportunities, and learn from the experiences 
-                  of successful graduates in your field.
-                </p>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-yellow-500 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-yellow-600 transition-colors duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Access Student Portal
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Admin Portal */}
-          <div className="group">
-            <div className="bg-white rounded-2xl shadow-xl p-8 transition-all duration-300 hover:shadow-2xl hover:scale-105 border border-gray-100">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-500 transition-colors duration-300">
-                  <Settings className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 font-['Poppins']">Admin Portal</h3>
-                <p className="text-gray-600 mb-8 font-['Inter']">
-                  Manage the alumni network, organize events, track donations, and maintain 
-                  the platform for optimal user experience.
-                </p>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-yellow-500 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-yellow-600 transition-colors duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Admin Login
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Features Section */}
         <div className="mt-20 grid md:grid-cols-2 lg:grid-cols-4 gap-8">

@@ -4,8 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { GraduationCap, ArrowLeft } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('Student'); // Add role state
   const { login, loading } = useAuth();
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -15,12 +16,13 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      const data = await login(username, password);
+      // Pass role to the login function
+      const data = await login(email, password, role);
       if (data.error) {
         setError(data.error);
       } else if (data.role) {
         // Redirect based on role
-        switch (data.role) {
+        switch (data.role.toLowerCase()) {
           case 'admin':
             navigate('/admin');
             break;
@@ -59,17 +61,17 @@ const LoginPage: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email
               </label>
               <input
-                id="username"
-                type="text"
+                id="email"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
-                placeholder="Enter your username"
+                placeholder="Enter your email"
               />
             </div>
 
@@ -88,6 +90,23 @@ const LoginPage: React.FC = () => {
               />
             </div>
 
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
+                Login as
+              </label>
+              <select
+                id="role"
+                required
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+              >
+                <option value="Student">Student</option>
+                <option value="Alumni">Alumni</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -103,15 +122,9 @@ const LoginPage: React.FC = () => {
               className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
+              Go Back
             </button>
           </div>
-        </div>
-
-        <div className="mt-6 text-center text-white text-sm">
-          <p>Demo Accounts:</p>
-          <p>Alumni: alumni@test.com | Student: student@test.com | Admin: admin@test.com</p>
-          <p>Password: password123</p>
         </div>
       </div>
     </div>

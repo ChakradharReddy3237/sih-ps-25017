@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 
 const SignupPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setemail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('student'); // Default role
+  const [role, setRole] = useState('Alumini'); // Default role
   const { signup } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signup(username, password, role);
+      await signup(email, password, role);
       navigate('/login');
     } catch (error) {
       console.error('Signup failed', error);
@@ -25,11 +25,11 @@ const SignupPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="p-8 bg-white rounded shadow-md">
         <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
         <div className="mb-4">
-          <label className="block mb-2">Username</label>
+          <label className="block mb-2">Email</label>
           <input
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setemail(e.target.value)}
             className="w-full p-2 border rounded"
           />
         </div>
