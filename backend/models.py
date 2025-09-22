@@ -157,6 +157,7 @@ class Event(Base):
     end_time = Column(DateTime)
     description = Column(Text)
     event_org_id = Column(Integer, ForeignKey("event_organizers.event_org_id"), nullable=False)
+    req_donation = Column(Integer, nullable=False, default=0)
 
 
 class EventParticipation(Base):
