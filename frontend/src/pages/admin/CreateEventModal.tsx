@@ -11,6 +11,7 @@ interface CreateEventModalProps {
     dateTo: string; 
     timeFrom: string; 
     timeTo: string; 
+    goal: number;
   }) => void;
 }
 
@@ -28,11 +29,30 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !dateTo || !dateFrom || !timeFrom || !timeTo) {
-      setError('All fields are required.');
+    if (!title || !description || !dateTo || !dateFrom || !timeFrom || !timeTo || goal <= 0) {
+      setError('All fields are required and goal must be greater than 0.');
       return;
     }
-    onCreate({ title, description, dateFrom, dateTo, timeFrom, timeTo });
+
+    // Validate that end date/time is after start date/time
+    const startDateTime = new Date(`${dateFrom}T${timeFrom}`);
+    const endDateTime = new Date(`${dateTo}T${timeTo}`);
+    
+    if (endDateTime <= startDateTime) {
+      setError('End date and time must be after start date and time.');
+      return;
+    }
+
+    onCreate({ title, description, dateFrom, dateTo, timeFrom, timeTo, goal });
+    // Reset form
+    setTitle('');
+    setDescription('');
+    setDateFrom('');
+    setDateTo('');
+    setTimeFrom('');
+    setTimeTo('');
+    setGoal(0);
+    setError('');
     onClose(); // Close modal on successful creation
   };
 
