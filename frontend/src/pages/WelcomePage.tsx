@@ -36,6 +36,7 @@ const WelcomePage: React.FC = () => {
                     Signup
                 </button>
             </div>
+
           </div>
         </div>
       </header>

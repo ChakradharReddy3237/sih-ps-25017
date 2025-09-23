@@ -155,6 +155,7 @@ const [events, setEvents] = useState<EventType[]>([
     setIsModalOpen(false); // Close modal after creation
   };
 
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
@@ -215,6 +216,7 @@ const [events, setEvents] = useState<EventType[]>([
     setCurrentPage(1);
   }, [activeTab, searchTerm]);
 
+
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto">
@@ -229,6 +231,7 @@ const [events, setEvents] = useState<EventType[]>([
             <button 
               onClick={() => setIsModalOpen(true)}
               className="flex items-center space-x-2 bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+
               <Plus className="h-5 w-5" />
               <span>Create Event</span>
             </button>
@@ -252,6 +255,7 @@ const [events, setEvents] = useState<EventType[]>([
           </div>
         </div>
 
+
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
@@ -260,6 +264,7 @@ const [events, setEvents] = useState<EventType[]>([
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2 ${
+
                   activeTab === tab.id
                     ? 'border-yellow-500 text-yellow-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -273,6 +278,7 @@ const [events, setEvents] = useState<EventType[]>([
                 }`}>
                   {tab.count}
                 </span>
+
               </button>
             ))}
           </nav>
@@ -282,6 +288,7 @@ const [events, setEvents] = useState<EventType[]>([
         <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 min-h-[400px]">
           {currentEvents.length > 0 ? (
             currentEvents.map((event) => (
+
             <div key={event.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
               <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                 <div className="text-center text-white">
@@ -350,6 +357,7 @@ const [events, setEvents] = useState<EventType[]>([
                   <button 
                     onClick={() => handleDeleteEvent(event.id)}
                     className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -400,6 +408,7 @@ const [events, setEvents] = useState<EventType[]>([
               className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight className="h-4 w-4" />
+
             </button>
           </div>
         )}
@@ -420,9 +429,9 @@ const [events, setEvents] = useState<EventType[]>([
           onSave={handleUpdateEvent}
         />
       )}
+
     </div>
   );
 };
-
 
 export default EventManagement;

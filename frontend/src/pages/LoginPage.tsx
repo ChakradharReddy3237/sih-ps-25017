@@ -7,6 +7,7 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Student'); // Add role state
+
   const { login, loading } = useAuth();
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -18,11 +19,13 @@ const LoginPage: React.FC = () => {
     try {
       // Pass role to the login function
       const data = await login(email, password, role);
+
       if (data.error) {
         setError(data.error);
       } else if (data.role) {
         // Redirect based on role
         switch (data.role.toLowerCase()) {
+
           case 'admin':
             navigate('/admin');
             break;
@@ -72,6 +75,7 @@ const LoginPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
                 placeholder="Enter your email"
+
               />
             </div>
 
@@ -107,6 +111,7 @@ const LoginPage: React.FC = () => {
               </select>
             </div>
 
+
             <button
               type="submit"
               disabled={loading}
@@ -126,6 +131,7 @@ const LoginPage: React.FC = () => {
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );

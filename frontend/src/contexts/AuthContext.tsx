@@ -47,6 +47,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error("Login error:", error);
       return { error: "Failed to connect to the server. Please ensure the backend is running." };
+
     } finally {
       setLoading(false);
     }
@@ -54,12 +55,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Handles the signup process (currently not used as per requirements)
   const signup = async (email: string, password: string, role: string) => {
+
     setLoading(true);
     try {
       const response = await fetch('http://127.0.0.1:8000/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, role }),
+
       });
       return await response.json();
     } finally {
@@ -83,4 +86,3 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-

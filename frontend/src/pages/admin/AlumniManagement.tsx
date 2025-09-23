@@ -20,6 +20,7 @@ const AlumniManagement: React.FC = () => {
     {
       id: '1',
       digital_id: 'ALU2018CS001',
+
       full_name: 'Rajesh Kumar',
       email: 'rajesh.kumar@email.com',
       graduation_year: 2018,
@@ -34,6 +35,7 @@ const AlumniManagement: React.FC = () => {
     {
       id: '2',
       digital_id: 'ALU2019EC002',
+
       full_name: 'Priya Sharma',
       email: 'priya.sharma@email.com',
       graduation_year: 2019,
@@ -191,6 +193,7 @@ const AlumniManagement: React.FC = () => {
     }
   };
 
+
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto">
@@ -326,6 +329,7 @@ const AlumniManagement: React.FC = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Digital ID
+
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Email
@@ -341,6 +345,7 @@ const AlumniManagement: React.FC = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
+
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions

@@ -6,6 +6,7 @@ const SignupPage: React.FC = () => {
   const [email, setemail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Alumini'); // Default role
+
   const { signup } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -30,6 +31,7 @@ const SignupPage: React.FC = () => {
             type="text"
             value={email}
             onChange={(e) => setemail(e.target.value)}
+
             className="w-full p-2 border rounded"
           />
         </div>
