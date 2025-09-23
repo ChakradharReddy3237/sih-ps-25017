@@ -1,18 +1,44 @@
-import React, { useState } from 'react';
-import { Plus, Calendar, Clock, Target, Users, Edit, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Plus, Calendar, Clock, Target, Users, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import CreateEventModal from './CreateEventModal';
+import { Link, useNavigate } from 'react-router-dom';
+import EditEventModal from './EditEventModal';
+
+type EventType = {
+  id: string;
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  status: 'Upcoming' | 'Ongoing' | 'Past';
+  funding_goal: number;
+  current_funding: number;
+  donors_count: number;
+  banner_image_url: string;
+};
+
+interface EditEventModalProps {
+  event: EventType;
+  onClose: () => void;
+  onSave: (updatedEvent: EventType) => void;
+}
 
 const EventManagement: React.FC = () => {
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [eventsPerPage] = useState(6); // Show 6 events per page
+  const [isLoading, setIsLoading] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'ongoing' | 'past'>('all');
-
-  const tabs = [
-    { id: 'all' as const, label: 'All Events' },
-    { id: 'upcoming' as const, label: 'Upcoming' },
-    { id: 'ongoing' as const, label: 'Ongoing' },
-    { id: 'past' as const, label: 'Past' },
-  ];
-
+  
   // Sample events data
-  const events = [
+const [events, setEvents] = useState<EventType[]>([
     {
       id: '1',
       title: 'Annual Tech Symposium 2025',
@@ -49,7 +75,86 @@ const EventManagement: React.FC = () => {
       donors_count: 38,
       banner_image_url: '',
     },
+  ]);
+  
+  // Get event counts for each tab - optimized with useMemo
+  const eventCounts = useMemo(() => {
+    return {
+      all: events.length,
+      upcoming: events.filter(e => e.status === 'Upcoming').length,
+      ongoing: events.filter(e => e.status === 'Ongoing').length,
+      past: events.filter(e => e.status === 'Past').length,
+    };
+  }, [events]);
+
+  const tabs = [
+    { id: 'all' as const, label: 'All Events', count: eventCounts.all },
+    { id: 'upcoming' as const, label: 'Upcoming', count: eventCounts.upcoming },
+    { id: 'ongoing' as const, label: 'Ongoing', count: eventCounts.ongoing },
+    { id: 'past' as const, label: 'Past', count: eventCounts.past },
   ];
+
+  // NOTE: In a real app, you would fetch this data
+  // useEffect(() => {
+  //   fetch('/api/events')
+  //     .then(res => res.json())
+  //     .then(data => setEvents(data));
+  // }, []);
+
+  const handleOpenEditModal = (event: EventType) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedEvent(null);
+  };
+
+  const handleUpdateEvent = (updatedEvent: EventType) => {
+    // This function will be called from the EditEventModal on successful save
+    setEvents(currentEvents =>
+      currentEvents.map(event =>
+        event.id === updatedEvent.id ? updatedEvent : event
+      )
+    );
+    handleCloseEditModal(); // Close the modal after update
+  };
+
+  // Bonus: Handler for Delete button
+  const handleDeleteEvent = async (eventId: string) => {
+    if (window.confirm('Are you sure you want to delete this event?')) {
+        try {
+            const response = await fetch(`/api/event/${eventId}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Failed to delete.');
+            
+            setEvents(currentEvents => currentEvents.filter(event => event.id !== eventId));
+            alert('Event deleted successfully!');
+        } catch (error) {
+            console.error("Delete failed:", error);
+            alert('Could not delete the event.');
+        }
+    }
+  };
+
+
+  const handleCreateEvent = (newEventData: { title: string; description: string; dateFrom: string; dateTo: string; timeFrom: string; timeTo: string; goal: number }) => {
+    const newEvent = {
+      id: (events.length + 1).toString(), // Simple ID generation
+      title: newEventData.title,
+      description: newEventData.description,
+      start_time: `${newEventData.dateFrom}T${newEventData.timeFrom}`,
+      end_time: `${newEventData.dateTo}T${newEventData.timeTo}`,
+      status: 'Upcoming' as const,
+      funding_goal: newEventData.goal,
+      current_funding: 0,
+      donors_count: 0,
+      banner_image_url: '',
+    };
+    setEvents(prevEvents => [newEvent, ...prevEvents]);
+    setIsModalOpen(false); // Close modal after creation
+  };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -79,6 +184,39 @@ const EventManagement: React.FC = () => {
     }
   };
 
+  // Filter events based on active tab and search term - using useMemo for optimization
+  const filteredEvents = useMemo(() => {
+    let filtered = events;
+
+    // Apply tab filter only if not 'all' - this avoids unnecessary filtering
+    if (activeTab !== 'all') {
+      filtered = events.filter(event => event.status.toLowerCase() === activeTab);
+    }
+
+    // Apply search filter if search term exists
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(event =>
+        event.title.toLowerCase().includes(searchLower) ||
+        event.description.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return filtered;
+  }, [events, activeTab, searchTerm]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+  const startIndex = (currentPage - 1) * eventsPerPage;
+  const endIndex = startIndex + eventsPerPage;
+  const currentEvents = filteredEvents.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm]);
+
+
   return (
     <div className="p-8">
       <div className="max-w-7xl mx-auto">
@@ -90,12 +228,33 @@ const EventManagement: React.FC = () => {
                 Create, manage, and track institutional events and their funding
               </p>
             </div>
-            <button className="flex items-center space-x-2 bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center space-x-2 bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+
               <Plus className="h-5 w-5" />
               <span>Create Event</span>
             </button>
           </div>
         </div>
+
+        {/* Search and Filters */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+            />
+          </div>
+          <div className="text-sm text-gray-600">
+            Showing {currentEvents.length} of {filteredEvents.length} events
+          </div>
+        </div>
+
 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-8">
@@ -104,21 +263,32 @@ const EventManagement: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2 ${
+
                   activeTab === tab.id
                     ? 'border-yellow-500 text-yellow-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  activeTab === tab.id
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {tab.count}
+                </span>
+
               </button>
             ))}
           </nav>
         </div>
 
         {/* Events Grid */}
-        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {events.map((event) => (
+        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6 min-h-[400px]">
+          {currentEvents.length > 0 ? (
+            currentEvents.map((event) => (
+
             <div key={event.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
               <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                 <div className="text-center text-white">
@@ -174,34 +344,92 @@ const EventManagement: React.FC = () => {
                     {Math.round((event.current_funding / event.funding_goal) * 100)}% funded
                   </p>
                 </div>
-
-                {/* Actions */}
-                <div className="flex space-x-2">
-                  <button className="flex-1 flex items-center justify-center space-x-2 bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors text-sm">
+              {/* Actions -- This is the part that changes */}
+                <div className="flex space-x-2 mt-auto pt-4"> {/* mt-auto pushes actions to the bottom */}
+                  <button 
+                    // <-- 4. CHANGE THE ONCLICK HANDLER
+                    onClick={() => handleOpenEditModal(event)}
+                    className="flex-1 flex items-center justify-center space-x-2 bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                  >
                     <Edit className="h-4 w-4" />
                     <span>Edit</span>
                   </button>
-                  <button className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button 
+                    onClick={() => handleDeleteEvent(event.id)}
+                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          ) : (
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
+              <Calendar className="h-12 w-12 mb-4" />
+              <h3 className="text-lg font-medium mb-2">No events found</h3>
+              <p className="text-sm">
+                {searchTerm ? 'Try adjusting your search terms' : 'Create your first event to get started'}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Empty State */}
-        {events.length === 0 && (
-          <div className="text-center py-12">
-            <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
-            <p className="text-gray-500 mb-4">Create your first event to get started.</p>
-            <button className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
-              Create Event
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            
+            <div className="flex space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === page
+                      ? 'bg-yellow-500 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="h-4 w-4" />
+
             </button>
           </div>
         )}
       </div>
+
+      {/* Create Modal */}
+      <CreateEventModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreate={handleCreateEvent}
+      />
+
+      {/* <-- 5. RENDER THE EDIT MODAL CONDITIONALLY */}
+      {isEditModalOpen && selectedEvent && (
+        <EditEventModal
+          event={selectedEvent}
+          onClose={handleCloseEditModal}
+          onSave={handleUpdateEvent}
+        />
+      )}
+
     </div>
   );
 };
